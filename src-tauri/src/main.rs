@@ -6,7 +6,10 @@ use anyhow::Result;
 async fn main() -> Result<(), anyhow::Error> {
     let result = myapp_lib::run();
     match result {
-        Err(e) => {}
+        Err(e) => {
+            eprintln!("Application error: {}", e);
+            return Err(e);
+        }
         _ => {}
     };
     Ok(())
