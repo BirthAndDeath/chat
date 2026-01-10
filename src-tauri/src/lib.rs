@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::fmt::Debug;
-
 use tauri::AppHandle;
+use tauri_plugin_cli::CliExt;
 
 mod port;
 
@@ -36,6 +36,27 @@ pub fn run() -> Result<(), anyhow::Error> {
         .plugin(tauri_plugin_cli::init())
         .setup(|app| {
             print!("setting up");
+            match app.handle().cli().matches() {
+                // `matches` here is a Struct with { args, subcommand }.
+                // `args` is `HashMap<String, ArgData>` where `ArgData` is a struct with { value, occurrences }.
+                // `subcommand` is `Option<Box<SubcommandMatches>>` where `SubcommandMatches` is a struct with { name, matches }.
+                Ok(matches) => {
+                    #[cfg(debug_assertions)]
+                    {
+                        println!("matches=>{:?}", matches);
+                        matches
+                            .args
+                            .iter()
+                            .for_each(|(key, value)| println!("{}=>{:?}", key, value));
+                    }
+                    if let Some(arg_data) = matches.args.get("server") {
+                        if &arg_data.value == true {
+                            println!("server mode!");
+                        }
+                    }
+                }
+                Err(_) => {}
+            }
             Ok(())
         })
         //.manage()
