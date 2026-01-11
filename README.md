@@ -1,4 +1,6 @@
-## 项目状态\n🚧 此项目目前处于**非常早期的开发阶段**。API可能剧烈变动，功能尚不完善。欢迎提供建议！
+## License  
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).  
+## 项目状态🚧 此项目目前处于**非常早期的开发阶段**。API可能剧烈变动，功能尚不完善。欢迎提供建议！
 version:0.0.1beta-dev
 ```sh
 
