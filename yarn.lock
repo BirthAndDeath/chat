@@ -837,6 +837,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tauri-apps/plugin-shell@npm:^2.3.4":
+  version: 2.3.4
+  resolution: "@tauri-apps/plugin-shell@npm:2.3.4"
+  dependencies:
+    "@tauri-apps/api": "npm:^2.8.0"
+  checksum: 10c0/5a7cccb2dddf7fd252767cd07fee24d10bc31105a72e45f27a958c3b7be4bab610af6d6ffe58969b0816d12ffe39a884a082a8a79e32eb537f9d51059ef79a2f
+  languageName: node
+  linkType: hard
+
 "@types/babel__core@npm:^7.20.5":
   version: 7.20.5
   resolution: "@types/babel__core@npm:7.20.5"
@@ -1596,6 +1605,7 @@ __metadata:
     "@tauri-apps/plugin-barcode-scanner": "npm:~2"
     "@tauri-apps/plugin-cli": "npm:~2"
     "@tauri-apps/plugin-opener": "npm:^2.5.3"
+    "@tauri-apps/plugin-shell": "npm:^2.3.4"
     "@types/qrcode": "npm:^1.5.6"
     "@types/react": "npm:^19.1.8"
     "@types/react-dom": "npm:^19.1.6"
@@ -1605,7 +1615,7 @@ __metadata:
     qrcode: "npm:^1.5.4"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    react-router-dom: "npm:^7.8.2"
+    react-router-dom: "npm:^7"
     typescript: "npm:~5.8.3"
     vite: "npm:^7.0.4"
   languageName: unknown
@@ -1794,7 +1804,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:^7.8.2":
+"react-router-dom@npm:^7":
   version: 7.12.0
   resolution: "react-router-dom@npm:7.12.0"
   dependencies:

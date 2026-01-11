@@ -34,6 +34,7 @@ const RAW_RUNTIME_STATE =
           ["@tauri-apps/plugin-barcode-scanner", "npm:2.4.3"],\
           ["@tauri-apps/plugin-cli", "npm:2.4.1"],\
           ["@tauri-apps/plugin-opener", "npm:2.5.3"],\
+          ["@tauri-apps/plugin-shell", "npm:2.3.4"],\
           ["@types/qrcode", "npm:1.5.6"],\
           ["@types/react", "npm:19.2.8"],\
           ["@types/react-dom", "virtual:19f1c68296beace3da0ae7a2043f1049519ed61bc494bfc6322f417793fbc8cce44a509789351eec30a639adfc830d84edbc9a96a4d652c95bc5fa01f6a2d1dc#npm:19.2.3"],\
@@ -1073,6 +1074,16 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@tauri-apps/plugin-shell", [\
+      ["npm:2.3.4", {\
+        "packageLocation": "../../.yarn/berry/cache/@tauri-apps-plugin-shell-npm-2.3.4-5adf6c13eb-10c0.zip/node_modules/@tauri-apps/plugin-shell/",\
+        "packageDependencies": [\
+          ["@tauri-apps/api", "npm:2.9.1"],\
+          ["@tauri-apps/plugin-shell", "npm:2.3.4"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@types/babel__core", [\
       ["npm:7.20.5", {\
         "packageLocation": "../../.yarn/berry/cache/@types-babel__core-npm-7.20.5-4d95f75eab-10c0.zip/node_modules/@types/babel__core/",\
@@ -1905,6 +1916,7 @@ const RAW_RUNTIME_STATE =
           ["@tauri-apps/plugin-barcode-scanner", "npm:2.4.3"],\
           ["@tauri-apps/plugin-cli", "npm:2.4.1"],\
           ["@tauri-apps/plugin-opener", "npm:2.5.3"],\
+          ["@tauri-apps/plugin-shell", "npm:2.3.4"],\
           ["@types/qrcode", "npm:1.5.6"],\
           ["@types/react", "npm:19.2.8"],\
           ["@types/react-dom", "virtual:19f1c68296beace3da0ae7a2043f1049519ed61bc494bfc6322f417793fbc8cce44a509789351eec30a639adfc830d84edbc9a96a4d652c95bc5fa01f6a2d1dc#npm:19.2.3"],\
