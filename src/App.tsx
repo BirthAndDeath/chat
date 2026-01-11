@@ -9,7 +9,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { TrayIcon } from '@tauri-apps/api/tray';
 import { defaultWindowIcon } from '@tauri-apps/api/app';
 import "./App.css";
-
+import QRCode from 'qrcode'
 
 
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';

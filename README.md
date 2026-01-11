@@ -6,6 +6,7 @@ version:0.0.1beta-dev
 
 yarn install
 yarn run tauri add cli
+yarn run tauri add barcode-scanner
 yarn tauri dev
 ```
 ---

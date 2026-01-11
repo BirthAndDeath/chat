@@ -6,7 +6,8 @@ use tauri::AppHandle;
 use tauri_plugin_cli::CliExt;
 mod port;
 use tauri::Manager;
-
+use tauri_plugin_cli::init as cli_init;
+use tauri_plugin_opener::init as opener_init;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -33,7 +34,20 @@ pub fn check<T, E: Debug>(r: Result<T, E>) -> T {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() -> Result<(), anyhow::Error> {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+    
+    #[cfg(target_os = "android")]
+    {
+        builder = builder.plugin(tauri_plugin_barcode_scanner::init());
+    }
+    
+    #[cfg(not(target_os = "android"))]
+    {
+        // 对于非 Android 平台，我们不添加条码扫描插件
+        // 因为插件仅在移动平台上可用
+    }
+
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_cli::init())
         .setup(|app| {
