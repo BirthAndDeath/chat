@@ -145,6 +145,8 @@ function App() {
           </ul>
         </div>
       </div>
+      <p>Source code: https://github.com/BirthAndDeath/myapp-p2pchat
+        Licensed under AGPL-3.0</p>
 
     </main>
   );
