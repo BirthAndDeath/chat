@@ -2,6 +2,11 @@
 
 myapp 是一个基于 Tauri 框架构建的跨平台桌面应用程序，目前处于非常早期的开发阶段。本项目旨在提供一个高性能、低资源占用的桌面工具，集成了条码扫描、命令行接口等多种实用功能。
 
+## 项目状态
+
+🚧 此项目目前处于**非常早期的开发阶段**。功能尚不完善。欢迎提供建议！
+
+version:0.0.1beta
 ## 特性
 
 - **跨平台支持**：可在 Windows、macOS 和 Linux 上运行
@@ -47,11 +52,7 @@ yarn tauri dev
 yarn tauri build
 ```
 
-## 项目状态
 
-🚧 此项目目前处于**非常早期的开发阶段**。功能尚不完善。欢迎提供建议！
-
-version:0.0.1beta-dev
 
 ## License
 This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
