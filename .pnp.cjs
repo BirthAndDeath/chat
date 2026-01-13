@@ -34,6 +34,7 @@ const RAW_RUNTIME_STATE =
           ["@tauri-apps/plugin-barcode-scanner", "npm:2.4.3"],\
           ["@tauri-apps/plugin-cli", "npm:2.4.1"],\
           ["@tauri-apps/plugin-opener", "npm:2.5.3"],\
+          ["@tauri-apps/plugin-os", "npm:2.3.2"],\
           ["@tauri-apps/plugin-shell", "npm:2.3.4"],\
           ["@types/qrcode", "npm:1.5.6"],\
           ["@types/react", "npm:19.2.8"],\
@@ -1074,6 +1075,16 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@tauri-apps/plugin-os", [\
+      ["npm:2.3.2", {\
+        "packageLocation": "../../.yarn/berry/cache/@tauri-apps-plugin-os-npm-2.3.2-8b1c08ae29-10c0.zip/node_modules/@tauri-apps/plugin-os/",\
+        "packageDependencies": [\
+          ["@tauri-apps/api", "npm:2.9.1"],\
+          ["@tauri-apps/plugin-os", "npm:2.3.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@tauri-apps/plugin-shell", [\
       ["npm:2.3.4", {\
         "packageLocation": "../../.yarn/berry/cache/@tauri-apps-plugin-shell-npm-2.3.4-5adf6c13eb-10c0.zip/node_modules/@tauri-apps/plugin-shell/",\
@@ -1916,6 +1927,7 @@ const RAW_RUNTIME_STATE =
           ["@tauri-apps/plugin-barcode-scanner", "npm:2.4.3"],\
           ["@tauri-apps/plugin-cli", "npm:2.4.1"],\
           ["@tauri-apps/plugin-opener", "npm:2.5.3"],\
+          ["@tauri-apps/plugin-os", "npm:2.3.2"],\
           ["@tauri-apps/plugin-shell", "npm:2.3.4"],\
           ["@types/qrcode", "npm:1.5.6"],\
           ["@types/react", "npm:19.2.8"],\

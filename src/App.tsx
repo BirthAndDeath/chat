@@ -1,21 +1,72 @@
-
 import './App.css';
 
 import { Icon } from "@iconify/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 
 import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom';
 import "./App.css";
-
-
-
+import { scan, Format } from '@tauri-apps/plugin-barcode-scanner';
+import QRCode_show from 'qrcode'
+import QRCode_scan, { BrowserQRCodeReader } from '@zxing/browser'
 import viteUrl from '/vite.svg'
 import tauriUrl from '/tauri.svg'
 import myappUrl from '/myapp.svg'
-
+import { platform } from '@tauri-apps/plugin-os';
 import Chatpage from './pages/Chatpage'
+import About from './pages/About'; // 导入新创建的About组件
+
+const AddContactShow = ({ text = 'hello' }) => {
+  const navigate = useNavigate();//hook
+  console.log('add contact show');
+
+  const [svg, setSvg] = useState('');
+
+  useEffect(() => {
+    QRCode_show.toString(text, { type: 'svg', width: 128, margin: 1 })
+      .then(setSvg)
+      .catch(console.error);
+  }, [text]);
+
+
+  // 使用dangerouslySetInnerHTML安全地渲染SVG内容
+  return (
+    <div>
+      <Link to="/scan">
+        <button> scan qrcode</button>
+      </Link>
+      <p>{text}</p>
+      <div
+        style={{ width: 128, height: 128 }}
+        dangerouslySetInnerHTML={{ __html: svg }}
+      />
+    </div>
+  );
+}
+const AddContactScan = () => {
+  const navigate = useNavigate();
+  let result;
+  if (platform() === 'android' || platform() === 'ios') {
+    result = scan({ windowed: true, formats: [Format.QRCode] });
+  } else {
+    const codeReader = new BrowserQRCodeReader();
+
+  };
+  console.log('add contact scan');
+  return (
+
+    <div>
+      <Link to="/show">
+        <button> show qrcode</button>
+      </Link>
+      <div>
+        <p>add successfully</p>
+      </div>
+    </div >
+  );
+}
+
 const Home = () => {
 
   const [greetMsg, setGreetMsg] = useState("");
@@ -39,11 +90,11 @@ const Home = () => {
         <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
-        <a href="./myweb.html" rel="noopener noreferrer">
+        <Link to="/about">
           <img src={myappUrl
           } className="logo myapp" alt="Myapp logo" sizes='120%' />
+        </Link>
 
-        </a>
       </div>
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
@@ -65,10 +116,6 @@ const Home = () => {
       {/* 应用程序路由配置：定义了主页("/")和关于页面("/about")的路由规则 */}
       {/* 使用嵌套路由，根路径"/"渲染Layout组件，其中包含导航和子路由出口 */}
 
-
-      <p>Source code: https://github.com/BirthAndDeath/myapp-p2pchat
-        Licensed under AGPL-3.0</p>
-
     </main>)
 }
 
@@ -85,10 +132,11 @@ const Layout = () => {
         <button onClick={() => navigate("/")} aria-label="Home"><Icon icon="mdi-light:home" /></button>
         <button onClick={goback} aria-label="Go back">&lt;</button>
         <button onClick={goforward} aria-label="Go forward">&gt;</button>
-        <Link to="/">Home</Link> | <Link to="/Chatpage">Chat</Link>
+        <Link to="/">Home</Link> | <Link to="/Chatpage">Chat</Link> | <Link to="/show">add condact</Link>
       </nav >
       <hr />
       <Outlet />          {/* 子路由渲染点 */}
+      <Link to="/about">About</Link> | <>Licensed under AGPL-3.0</>
     </>
   )
 }
@@ -115,7 +163,7 @@ async function app_init() {
     ],
   });
 
-  // 如果某个窗口未显式创建菜单，或者未显式设置菜单，那么此菜单将被分配给它。
+  // 如果某个窗口未显式创建菜单，或者未显式设置菜单，那么此菜单也将被分配给它。
   menu.setAsAppMenu().then((res) => {
     console.log('menu set success', res);
   });
@@ -129,6 +177,9 @@ function App() {
     <Route path="/" element={<Layout />}>
       <Route index element={<Home />} />
       <Route path="Chatpage" element={<Chatpage />} />
+      <Route path="show" element={<AddContactShow />} />
+      <Route path="scan" element={<AddContactScan />} />
+      <Route path="about" element={<About />} /> {/* 添加About页面路由 */}
     </Route>
   </Routes>
 
