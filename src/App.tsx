@@ -78,21 +78,13 @@ const Home = () => {
 
   return (
     <main className="container">
-      <h1><strong>Welcome to Tauri + React - Myapp</strong></h1>
+      <h1><strong>Welcome to Mychat</strong></h1>
       <p></p>
       <div className="row">
-        <a href="https://vite.dev" target="_blank" rel="noopener noreferrer">
-          <img src={viteUrl} className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank" rel="noopener noreferrer">
-          <img src={tauriUrl} className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+
         <Link to="/about">
           <img src={myappUrl
-          } className="logo myapp" alt="Myapp logo" sizes='120%' />
+          } className="logo myapp" alt="Myapp logo" sizes='150%' />
         </Link>
 
       </div>

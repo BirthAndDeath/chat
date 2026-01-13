@@ -37,7 +37,7 @@
   will-change: filter;
   transition: filter 300ms;
   /* 添加现代化阴影和圆角 */
-  border-radius: 16px;
+  border-radius: 0;
   box-shadow: 0 4px 20px var(--shadow-color);
 }
 
@@ -51,7 +51,7 @@ button {
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 500;
@@ -73,7 +73,7 @@ button:active {
 input,
 textarea {
   border: 2px solid var(--accent-color);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 10px 14px;
   font-size: 1rem;
   font-family: inherit;
@@ -91,7 +91,7 @@ textarea:focus {
 /* 为卡片类元素添加样式 */
 .card {
   background-color: var(--background-light);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: 0 4px 20px var(--shadow-color);
   padding: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;

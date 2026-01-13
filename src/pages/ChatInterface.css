@@ -80,7 +80,7 @@
     position: relative;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 0;
     background-color: #00a884;
     display: flex;
     align-items: center;
@@ -94,7 +94,7 @@
     position: absolute;
     width: 10px;
     height: 10px;
-    border-radius: 50%;
+    border-radius: 0;
     border: 2px solid #f8f9fa;
     bottom: 0;
     right: 0;
@@ -150,7 +150,7 @@
     position: relative;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 0;
     background-color: #6a11cb;
     display: flex;
     align-items: center;
@@ -200,7 +200,7 @@
 .message {
     max-width: 70%;
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: 0;
     background-color: white;
     box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
 }
@@ -246,7 +246,7 @@
     margin: 10px 0;
     padding: 10px 15px;
     background-color: #fff;
-    border-radius: 18px;
+    border-radius: 0;
     width: fit-content;
     box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
 }
@@ -259,7 +259,7 @@
 .dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: 0;
     background-color: #9ca3af;
     margin: 0 2px;
     animation: typingAnimation 1.5s infinite ease-in-out;
@@ -315,7 +315,7 @@
     max-height: 120px;
     padding: 10px 15px;
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     background-color: #fff;
     font-size: 15px;
     resize: none;
@@ -331,7 +331,7 @@
     height: 44px;
     padding: 0 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     background-color: #00a884;
     color: white;
     font-size: 15px;
