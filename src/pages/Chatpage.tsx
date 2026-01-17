@@ -36,26 +36,12 @@ const ChatPage = () => {
         // 例如：通过WebSocket通知对方
     };
     return (<div className="App">
-        <h1>简洁聊天界面</h1>
-        <div className="app-description">
-            <p>这是一个简洁的聊天界面，消息发送和接收逻辑已留空</p>
-        </div>
-
         <div className="chat-wrapper">
             <ChatInterface
                 onSendMessage={handleSendMessage}
                 onGetMessages={handleGetMessages}
                 onTyping={handleTyping}
             />
-        </div>
-
-        <div className="implementation-hint">
-            <h3>需要实现的外部函数：</h3>
-            <ul>
-                <li><code>onSendMessage</code>: 处理消息发送逻辑</li>
-                <li><code>onGetMessages</code>: 获取联系人消息记录</li>
-                <li><code>onTyping</code>: 处理用户输入状态通知</li>
-            </ul>
         </div>
     </div>)
 };

@@ -100,7 +100,6 @@ pub fn run() -> Result<(), anyhow::Error> {
             }
             Ok(())
         })
-        //.manage()
         .invoke_handler(tauri::generate_handler![greet, exit_app]) // 注册命令
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

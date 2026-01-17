@@ -36,12 +36,11 @@
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
-  /* 添加现代化阴影和圆角 */
-  border-radius: 0;
+
+  border-radius: 16px;
   box-shadow: 0 4px 20px var(--shadow-color);
 }
 
-/* 添加悬停效果 */
 .logo:hover {
   filter: drop-shadow(0 0 10px var(--hover-color));
 }
@@ -51,7 +50,7 @@ button {
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 0;
+  border-radius: 8px;
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 500;
@@ -73,7 +72,7 @@ button:active {
 input,
 textarea {
   border: 2px solid var(--accent-color);
-  border-radius: 0;
+  border-radius: 8px;
   padding: 10px 14px;
   font-size: 1rem;
   font-family: inherit;
@@ -88,10 +87,10 @@ textarea:focus {
   box-shadow: 0 0 0 3px var(--shadow-color);
 }
 
-/* 为卡片类元素添加样式 */
+
 .card {
   background-color: var(--background-light);
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: 0 4px 20px var(--shadow-color);
   padding: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -102,7 +101,6 @@ textarea:focus {
   box-shadow: 0 6px 25px var(--shadow-color);
 }
 
-/* 添加链接样式 */
 a {
   color: var(--primary-color);
   text-decoration: none;
