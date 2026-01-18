@@ -1,0 +1,19 @@
+name: tag-to-nightly
+on:
+  push:
+    tags:
+      - 'nightlyv*'          
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: force nightly to this tag
+        run: |
+          git checkout -B nightly ${{ github.ref }}
+          git push origin nightly --force-with-lease
