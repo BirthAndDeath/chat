@@ -92,5 +92,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: android-universal-aab
-            path: src-tauri/gen/android/app/build/outputs/bundle/universal/release/*.aab
+            path: src-tauri/gen/android/app/build/outputs/bundle/universalRelease/*.aab
           
