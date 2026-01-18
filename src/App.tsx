@@ -1,101 +1,28 @@
 import './App.css';
 
 import { Icon } from "@iconify/react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { invoke } from "@tauri-apps/api/core";
 
 import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom';
 import "./App.css";
-import { scan, Format } from '@tauri-apps/plugin-barcode-scanner';
-import QRCode_show from 'qrcode'
-import QRCode_scan, { BrowserQRCodeReader } from '@zxing/browser'
+
+
+
 
 import myappUrl from '/myapp.svg'
-import { platform } from '@tauri-apps/plugin-os';
-import Chatpage from './pages/Chatpage'
-import About from './pages/About'; // 导入新创建的About组件
-
-const AddContactShow = ({ text = 'hello' }) => {
-  const navigate = useNavigate();//hook
-  console.log('add contact show');
-
-  const [svg, setSvg] = useState('');
-
-  useEffect(() => {
-    QRCode_show.toString(text, { type: 'svg', width: 128, margin: 1 })
-      .then(setSvg)
-      .catch(console.error);
-  }, [text]);
 
 
-  // 使用dangerouslySetInnerHTML安全地渲染SVG内容
-  return (
-    <div>
-      <Link to="/scan">
-        <button> scan qrcode</button>
-      </Link>
-      <p>{text}</p>
-      <div
-        style={{ width: 128, height: 128 }}
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
-    </div>
-  );
-}
-const AddContactScan = () => {
-  let message = 'not set';
-  let result;
-  if (platform() === 'android' || platform() === 'ios') {
-    result = scan({ windowed: true, formats: [Format.QRCode] });
-  } else {
-    const codeReader = new BrowserQRCodeReader();
-    // 显示加载状态
-    console.log('正在启动摄像头进行二维码扫描...');
+const Chatpage = lazy(() => import('./pages/Chatpage'));
+const AddContactShow = lazy(() => import('./components/AddContactShow'));
+const AddContactScan = lazy(() => import('./components/AddContactScan'));
+const About = lazy(() => import('./pages/About'));
 
-    codeReader.decodeFromVideoDevice(undefined, 'video', (result, error) => {
-      if (error && error.name === 'NotFoundException') return;
-      if (result) {
-        console.log(result);
-        // 验证result和result.text是否存在，防止潜在错误
-        if (result && result.getText()) {
-          message = result.getText();//调试用
-        } else {
-          console.error('扫描结果无效');
-        }
-      } else if (error) {
-        message = error.message;
-        console.error('二维码扫描失败:', error);
-        // 根据不同类型的错误给出更具体的反馈
-        if (error.name === 'NotAllowedError') {
-          console.error('用户未授权访问摄像头');
-        } else if (error.name === 'NotFoundError') {
-          console.error('找不到可用的摄像头设备');
-        } else if (error.name === 'NotSupportedError') {
-          console.error('当前环境不支持摄像头访问');
-        } else if (error.name === 'StreamApiNotSupportedError') {
-          console.error('浏览器不支持流API');
-        } else {
-          console.error('其他错误:', error);
-        }
-      }
-    });
 
-  };
-  console.log('add contact scan');
-  return (
 
-    <div>
-      <Link to="/show">
-        <button> show qrcode</button>
-      </Link>
-      <div>
-        <p> {message}</p>
 
-      </div>
-    </div >
-  );
-}
+
 
 const Home = () => {
 
@@ -162,7 +89,7 @@ const Layout = () => {
     </>
   )
 }
-const Contacts = <h2>Contacts</h2>
+
 
 import { Menu } from '@tauri-apps/api/menu';
 async function exitApp() {
@@ -191,19 +118,39 @@ async function app_init() {
   });
 }
 
+const PageLoading = () => (
+  <div style={{ padding: '2rem', textAlign: 'center' }}>
+    <div>正在加载页面...</div>
+    {/* 可以放一个简单的 spinner */}
+  </div>
+);
 function App() {
+  useEffect(() => {
+    // 在组件挂载后执行初始化
+    const initialize = async () => {
+      try {
+        await app_init();
 
-  app_init();
 
-  return (<Routes>
-    <Route path="/" element={<Layout />}>
-      <Route index element={<Home />} />
-      <Route path="Chatpage" element={<Chatpage />} />
-      <Route path="show" element={<AddContactShow />} />
-      <Route path="scan" element={<AddContactScan />} />
-      <Route path="about" element={<About />} /> {/* 添加About页面路由 */}
-    </Route>
-  </Routes>
+      } catch (error) {
+        console.error('初始化失败:', error);
+      }
+    };
+    initialize();
+  }, []); // 空依赖数组确保只在组件挂载时运行一次
+
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="Chatpage" element={<Chatpage />} />
+          <Route path="show" element={<AddContactShow />} />
+          <Route path="scan" element={<AddContactScan />} />
+          <Route path="about" element={<About />} /> {/* 添加About页面路由 */}
+        </Route>
+      </Routes>
+    </Suspense >
 
 
   );

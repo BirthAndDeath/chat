@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, KeyboardEvent, ChangeEvent } from '
 import './ChatInterface.css';
 
 // ==================== 类型定义 ====================
-// 消息状态类型：发送中/已送达/已读
-type MessageStatus = 'sending' | 'delivered' | 'read';
+// 消息状态类型：发送中/已送达/已读/失败
+type MessageStatus = 'sending' | 'delivered' | 'read' | 'failed';
 
 // 发送者类型：自己/好友
 type SenderType = 'me' | 'friend';
