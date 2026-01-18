@@ -1,5 +1,5 @@
 function AddContact(key: undefined) {
-
+    console.log(key)
 
 
 }

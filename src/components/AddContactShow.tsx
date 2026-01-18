@@ -2,6 +2,7 @@ import "../App.css"
 import { useEffect, useState } from "react";
 import QRCode_show from 'qrcode'
 import { Link } from 'react-router-dom';
+/* webhint-enable no-inline-styles */
 const AddContactShow = ({ text = 'hello' }) => {
 
     console.log('add contact show');
@@ -60,4 +61,5 @@ const AddContactShow = ({ text = 'hello' }) => {
         </div>
     );
 }
+/* webhint-enable no-inline-styles */
 export default AddContactShow;
