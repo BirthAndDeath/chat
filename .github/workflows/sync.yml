@@ -1,5 +1,6 @@
 name: tag-to-nightly
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'nightlyv*'          
