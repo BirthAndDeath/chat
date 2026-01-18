@@ -55,6 +55,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
+          key: android
           workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
