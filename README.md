@@ -56,7 +56,7 @@ yarn tauri build
 
 ## License
 This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
-
+出于对通信软件安全性的考虑，暂定为传染性开源，转发服务等未来计划功能包含不会传染性
 ---
 ## HISTORY
 - 2025 创建项目

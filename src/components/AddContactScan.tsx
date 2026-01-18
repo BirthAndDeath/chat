@@ -1,13 +1,17 @@
 import { scan, Format } from '@tauri-apps/plugin-barcode-scanner';
 import { BrowserQRCodeReader } from '@zxing/browser'
 import { platform } from '@tauri-apps/plugin-os';
-
+import AddContact from "./AddContact"
 import { Link } from 'react-router-dom';
-const AddContactScan = () => {
-    let message = 'not set';
-    let result;
+const scancode = async () => {
+
+    let Scanresult;
+
     if (platform() === 'android' || platform() === 'ios') {
-        result = scan({ windowed: true, formats: [Format.QRCode] });
+
+        Scanresult = await scan({ windowed: true, formats: [Format.QRCode] });
+
+
     } else {
         const codeReader = new BrowserQRCodeReader();
         // 显示加载状态
@@ -19,12 +23,12 @@ const AddContactScan = () => {
                 console.log(result);
                 // 验证result和result.text是否存在，防止潜在错误
                 if (result && result.getText()) {
-                    message = result.getText();//调试用
+                    Scanresult = result.getText();
                 } else {
                     console.error('扫描结果无效');
                 }
             } else if (error) {
-                message = error.message;
+
                 console.error('二维码扫描失败:', error);
                 // 根据不同类型的错误给出更具体的反馈
                 if (error.name === 'NotAllowedError') {
@@ -40,9 +44,15 @@ const AddContactScan = () => {
                 }
             }
         });
+        AddContact(Scanresult);
 
     };
+
+}
+const AddContactScan = () => {
+
     console.log('add contact scan');
+
     return (
 
         <div>
@@ -50,7 +60,11 @@ const AddContactScan = () => {
                 <button> show qrcode</button>
             </Link>
             <div>
-                <p> {message}</p>
+                <p></p>
+                <button aria-label="scan qrcode 扫二维码" onClick={async () => {
+                    const result = await scancode();
+                    console.log(result);
+                }}> <p>"scan qrcode 扫二维码"</p ></button>
 
             </div>
         </div >

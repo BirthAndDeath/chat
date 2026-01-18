@@ -93,10 +93,12 @@ const Layout = () => {
 
 import { Menu } from '@tauri-apps/api/menu';
 async function exitApp() {
-  //todo : 退出app功能实现，用于后台退出
+
   await invoke('exit_app');
 }
 async function app_init() {
+
+
 
 
   const menu = await Menu.new({
@@ -109,6 +111,19 @@ async function app_init() {
 
         },
       },
+
+      {
+        id: 'exit',
+        text: 'Exit',
+        action: () => {
+          console.log('exit_i pressed');
+          exitApp()
+
+        },
+      },
+
+
+
     ],
   });
 
@@ -119,8 +134,8 @@ async function app_init() {
 }
 
 const PageLoading = () => (
-  <div style={{ padding: '2rem', textAlign: 'center' }}>
-    <div>正在加载页面...</div>
+  <div>
+    <div>LOADING . . . </div>
     {/* 可以放一个简单的 spinner */}
   </div>
 );

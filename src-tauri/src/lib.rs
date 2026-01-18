@@ -50,22 +50,42 @@ pub fn run() -> Result<(), anyhow::Error> {
         .plugin(tauri_plugin_cli::init())
         .setup(|app| {
             print!("setting up");
-            let apphandle = app.handle();
+            let apphandle = app.handle().clone();
 
             let quit_i = check(MenuItem::with_id(
-                apphandle,
+                &apphandle,
                 "quit",
                 "Quit",
                 true,
                 None::<&str>,
             ));
-            let menu = check(Menu::with_items(apphandle, &[&quit_i]));
+            let show_i = check(MenuItem::with_id(
+                &apphandle,
+                "show",
+                "Show",
+                true,
+                None::<&str>,
+            ));
+            let menu = check(Menu::with_items(&apphandle, &[&quit_i, &show_i]));
 
             let _tray: tauri::tray::TrayIcon = check(
                 TrayIconBuilder::new()
+                    .on_menu_event(|apphandle, event| match event.id.as_ref() {
+                        "quit" => {
+                            println!("quit menu item was clicked");
+                            apphandle.exit(0);
+                        }
+                        "show" => {
+                            println!("show menu item was clicked");
+                            let _ = apphandle.get_webview_window("main").unwrap().show();
+                        }
+                        _ => {
+                            println!("menu item {:?} not handled", event.id);
+                        }
+                    })
                     .menu(&menu)
                     .show_menu_on_left_click(true)
-                    .build(apphandle),
+                    .build(&apphandle),
             );
             let window = apphandle.get_webview_window("main");
             if let Some(window) = window {
