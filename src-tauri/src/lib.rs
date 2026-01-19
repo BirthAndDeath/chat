@@ -1,11 +1,10 @@
 use anyhow::Result;
 use std::fmt::Debug;
-use tauri::menu::{Menu, MenuItem};
-use tauri::tray::TrayIconBuilder;
+
 use tauri::AppHandle;
-use tauri_plugin_cli::CliExt;
+
 mod port;
-use tauri::Manager;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -15,6 +14,7 @@ fn greet(name: &str) -> String {
 fn exit_app(app: AppHandle) {
     app.exit(0);
 }
+
 pub fn check<T, E: Debug>(r: Result<T, E>) -> T {
     match r {
         Ok(r) => {
@@ -32,22 +32,30 @@ pub fn check<T, E: Debug>(r: Result<T, E>) -> T {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() -> Result<(), anyhow::Error> {
-    let builder = tauri::Builder::default().plugin(tauri_plugin_os::init());
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_opener::init());
     //mobile only
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(mobile)]
     {
         builder = builder.plugin(tauri_plugin_barcode_scanner::init());
     }
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_cli::init());
+    }
 
     builder
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_cli::init())
         .setup(|app| {
             print!("setting up");
             let apphandle = app.handle().clone();
             //Desktop only
-            #[cfg(not(any(target_os = "android", target_os = "ios")))]
+            #[cfg(desktop)]
             {
+                use tauri::menu::{Menu, MenuItem};
+                use tauri::tray::TrayIconBuilder;
+                use tauri::Manager;
+                use tauri_plugin_cli::CliExt;
                 let quit_i = check(MenuItem::with_id(
                     &apphandle,
                     "quit",

@@ -1,4 +1,4 @@
-import { scan, Format } from '@tauri-apps/plugin-barcode-scanner';
+
 import { BrowserQRCodeReader } from '@zxing/browser'
 import { platform } from '@tauri-apps/plugin-os';
 import AddContact from "./AddContact"
@@ -9,6 +9,7 @@ const scancode = async () => {
 
     if (platform() === 'android' || platform() === 'ios') {
 
+        const { scan, Format } = await import('@tauri-apps/plugin-barcode-scanner');
         Scanresult = await scan({ windowed: true, formats: [Format.QRCode] });
 
 
