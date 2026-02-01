@@ -114,6 +114,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "chat_core"
+version = "0.0.1"
+dependencies = [
+ "android-activity",
+ "ed25519-dalek",
+ "getrandom 0.3.4",
+ "jni",
+ "keyring",
+ "ring",
+ "security-framework 3.5.1",
+ "security-framework-sys",
+ "serde",
+ "subtle",
+ "thiserror 2.0.18",
+ "tss-esapi",
+ "zeroize",
+]
+
+[[package]]
 name = "combine"
 version = "4.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -454,25 +473,6 @@ name = "memchr"
 version = "2.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273"
-
-[[package]]
-name = "mychat_core"
-version = "0.0.1"
-dependencies = [
- "android-activity",
- "ed25519-dalek",
- "getrandom 0.3.4",
- "jni",
- "keyring",
- "ring",
- "security-framework 3.5.1",
- "security-framework-sys",
- "serde",
- "subtle",
- "thiserror 2.0.18",
- "tss-esapi",
- "zeroize",
-]
 
 [[package]]
 name = "ndk"

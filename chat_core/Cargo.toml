@@ -1,5 +1,5 @@
 [package]
-name = "mychat_core"
+name = "chat_core"
 version = "0.0.1"
 edition = "2024"
 description = "Securitycore of mychat"

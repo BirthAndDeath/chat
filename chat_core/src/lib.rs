@@ -26,7 +26,7 @@
 )]
 
 //! # Chat Root of Trust
-//!
+//!分布智能需要保证加密和权利义务对等
 //! 独立信任根 crate，负责：
 //! - 硬件密钥派生
 //! - 会话密钥管理
@@ -71,18 +71,19 @@ struct SecurityCore {
     message_cache: Vec<u8>,
 }
 impl SecurityCore {
-    fn new() -> Self {
+    fn new() -> Result<Self, TrustError> {
         let key;
         let newkey = SecretKey::generate();
         if let Err(e) = newkey {
+            return Err(e);
         } else {
             key = newkey.unwrap();
         }
 
-        Self {
+        Ok(Self {
             key: key,
             message_cache: Vec::new(),
-        }
+        })
     }
 }
 ///密钥类型
