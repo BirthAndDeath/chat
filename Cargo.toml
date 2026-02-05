@@ -1,7 +1,7 @@
 
 [workspace]
-members = ["chat_core", "src-tauri", "rootcell"]
-resolver = "2"
+members = ["chat_core", "src-tauri", "rootcell", "cli"]
+resolver = "3"
 [workspace.dependencies]
 rootcell = { path = "rootcell" }
 chat_core = { path = "chat_core" }

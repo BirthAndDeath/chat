@@ -48,7 +48,7 @@ fn tui_render(frame: &mut Frame, app: &App) {
         .map(|m| ListItem::new(Text::from(m.clone())))
         .collect();
 
-    let list = List::new(messages)
+    let message_list = List::new(messages)
         .block(
             Block::default()
                 .title(" 消息列表 ")
@@ -66,7 +66,9 @@ fn tui_render(frame: &mut Frame, app: &App) {
         .highlight_symbol(">> ");
 
     // 渲染带有状态的List
-    frame.render_stateful_widget(list, messages_area, &mut app.list_state.clone());
+    frame.render_stateful_widget(message_list, messages_area, &mut app.list_state.clone());
+
+
 
     // 3. 渲染输入框
     let input = Paragraph::new(app.input.as_str())

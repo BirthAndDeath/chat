@@ -38,7 +38,6 @@
 //! - 常量时间操作
 //!
 use std::fmt;
-
 use subtle::ConstantTimeEq;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 mod cilent;
@@ -71,7 +70,7 @@ struct SecurityCore {
     message_cache: Vec<u8>,
 }
 impl SecurityCore {
-    fn new() -> Result<Self, TrustError> {
+    fn try_init() -> Result<Self, TrustError> {
         let key;
         let newkey = SecretKey::generate();
         if let Err(e) = newkey {
