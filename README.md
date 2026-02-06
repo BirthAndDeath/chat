@@ -29,7 +29,7 @@ version:0.0.1
 ### 环境要求
 
 - Node.js (>=18)
-- Yarn
+- npm
 - Rust 工具链
 
 ### 开发环境搭建
@@ -39,10 +39,10 @@ version:0.0.1
 cd myapp
 
 # 安装依赖
-yarn install
+npm install
 
 # 启动开发服务器
-yarn tauri dev
+npm tauri dev
 ```
 你也可以进入cli目录然后执行
 ```bash
@@ -54,7 +54,7 @@ cargo run
 
 ```bash
 # 构建
-yarn tauri build
+npm tauri build
 ```
 
 ---
@@ -66,6 +66,7 @@ yarn tauri build
 未来展望：
 点对点加密
 身份密钥认证
+算力共享(？)
 以及各种可能的设想
 ## 吐槽
 在上学，无时间😭
