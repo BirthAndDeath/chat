@@ -1,18 +1,22 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-
+  import { listen } from "@tauri-apps/api/event";
   let message = $state("");
   let result = $state(false);
 
-  async function greet(event: Event) {
+  async function send(event: Event) {
     event.preventDefault();
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     result = await invoke("send", { message });
   }
+
+  listen("chat-message", (event) => {
+    console.log("收到消息:", event.payload);
+  });
 </script>
 
 <main class="container">
-  <h1>Welcome to Tauri + Svelte</h1>
+  <h1>Welcome to Chat</h1>
 
   <div class="row">
     <a href="https://github.com/BirthAndDeath/chat" target="_blank">
@@ -21,7 +25,7 @@
   </div>
   <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
 
-  <form class="row" onsubmit={greet}>
+  <form class="row" onsubmit={send}>
     <input
       id="input-holder"
       placeholder="Enter message..."

@@ -754,11 +754,13 @@ name = "chat"
 version = "0.1.0"
 dependencies = [
  "chat_core",
+ "libp2p",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+ "tokio",
 ]
 
 [[package]]
