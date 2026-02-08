@@ -1,8 +1,6 @@
 use std::{
     collections::hash_map::DefaultHasher,
-    error::Error,
     hash::{Hash, Hasher},
-    str::FromStr,
     time::Duration,
 };
 
@@ -10,7 +8,7 @@ use libp2p::{
     Swarm,
     futures::io,
     gossipsub, mdns, noise,
-    swarm::{self, NetworkBehaviour, SwarmEvent},
+    swarm::{NetworkBehaviour, SwarmEvent},
     tcp, yamux,
 };
 use tokio::sync::mpsc;
@@ -101,7 +99,7 @@ impl ChatCore {
     }
 }
 fn swarm_init() -> anyhow::Result<Swarm<MyBehaviour>> {
-    let mut swarm = libp2p::SwarmBuilder::with_new_identity()
+    let swarm = libp2p::SwarmBuilder::with_new_identity()
         .with_tokio()
         .with_tcp(
             tcp::Config::default(),

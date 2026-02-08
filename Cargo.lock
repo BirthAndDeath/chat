@@ -764,7 +764,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "chat-cli"
+name = "chat_cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",

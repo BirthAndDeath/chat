@@ -1,6 +1,6 @@
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
-use std::{error::Error, ops::ControlFlow, str::FromStr, time::Duration};
+use std::{str::FromStr, time::Duration};
 
 use crate::CoreConfig;
 pub fn init(cfg: &CoreConfig) -> anyhow::Result<()> {
@@ -21,6 +21,6 @@ pub fn init(cfg: &CoreConfig) -> anyhow::Result<()> {
         .pragma("temp_store", "memory") // 设置 PRAGMA 参数
         .pragma("cache_size", "-10000"); // 设置缓存大小（约 10MB）
 
-    let pool = pool_options.connect_lazy_with(connect_options);
+    let _pool = pool_options.connect_lazy_with(connect_options);
     Ok(())
 }
