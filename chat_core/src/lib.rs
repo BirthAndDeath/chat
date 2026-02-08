@@ -32,7 +32,7 @@ impl CoreConfig {
     }
 }
 pub enum MessageEvent {
-    newmassage,
+    Newmassage,
 }
 pub struct ChatMeassage {
     pub event: MessageEvent,
@@ -87,7 +87,7 @@ impl ChatCore {
     }
     fn sendmessage_mpsc(&mut self, data: String) {
         let message = ChatMeassage {
-            event: MessageEvent::newmassage,
+            event: MessageEvent::Newmassage,
             data,
         };
         let tx = self.tx_message.clone();

@@ -1,35 +1,73 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
-  let message = $state("");
+  import { onMount } from "svelte";
+  let msg_items = $state([""]);
+
+  function add(input: string) {
+    if (input.trim()) {
+      msg_items = [...msg_items, input.trim()];
+      input = "";
+    }
+  }
+  function remove(index: number) {
+    msg_items = msg_items.filter((_, i) => i !== index);
+  }
+
+  let message_send = $state("");
   let result = $state(false);
+
+  let message_receive = $state("");
 
   async function send(event: Event) {
     event.preventDefault();
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    result = await invoke("send", { message });
+    result = await invoke("send", { message: message_send });
   }
 
-  listen("chat-message", (event) => {
-    console.log("收到消息:", event.payload);
+  onMount(() => {
+    let unlisten: (() => void) | undefined;
+
+    (async () => {
+      unlisten = await listen("chat-message", (event) => {
+        console.log("收到消息:", event.payload);
+        console.log("payload:", event.payload);
+        console.log("type:", typeof event.payload);
+        if (typeof event.payload === "string") {
+          msg_items = [...msg_items, event.payload];
+        }
+      });
+    })();
+
+    return () => {
+      if (unlisten) unlisten();
+    };
   });
 </script>
 
 <main class="container">
   <h1>Welcome to Chat</h1>
+  <ul>
+    {#each msg_items as item, i}
+      <li>
+        <span>{item}</span>
+        <button class="del" onclick={() => remove(i)}>×</button>
+      </li>
+    {/each}
+  </ul>
 
   <div class="row">
     <a href="https://github.com/BirthAndDeath/chat" target="_blank">
       <img src="/logo.svg" class="logo chat" alt="Chat Logo" />
     </a>
   </div>
-  <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
+  <p>Click on the Chat logos to jump to githubpage.</p>
 
   <form class="row" onsubmit={send}>
     <input
       id="input-holder"
       placeholder="Enter message..."
-      bind:value={message}
+      bind:value={message_send}
     />
     <button type="submit">Greet</button>
   </form>

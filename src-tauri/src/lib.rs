@@ -1,12 +1,28 @@
+use chat_core::ChatMeassage;
 use libp2p::futures::StreamExt;
-use tauri::{Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
+use libp2p::{
+    Swarm,
+    futures::io,
+    gossipsub};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-fn send(_message: &str) -> bool {
-    //chat_core::ChatCore::sendmessage(message.to_string());
-    true
+async fn send(state: tauri::State<'_, AppData>, message: &str) -> Result<bool, String> {
+    let result = state
+        .cmd_tx
+        .send(ChatCommand::SendMessage {
+            message: message.to_string(),
+        })
+        .await;
+
+    match result {
+        Ok(_) => Ok(true),
+        Err(e) => Err(format!("发送消息失败: {}", e)),
+    }
 }
+     
+
 /*app_data_dir()		数据库、配置
 app_local_data_dir()	缓存、日志
 app_config_dir()		用户配置
@@ -15,9 +31,14 @@ temp_dir() */
 use tokio::sync::mpsc;
 
 // 只存 Send + Sync 的数据
+#[derive(Debug)]
+enum ChatCommand {
+    SendMessage { message: String },
+    Shutdown,
+}
 pub struct AppData {
-    pub cmd_tx: mpsc::Sender<chat_core::ChatMeassage>,
-    pub topic: String,
+    pub cmd_tx: mpsc::Sender<ChatCommand>,
+    pub topic:gossipsub::IdentTopic,
 }
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -33,13 +54,9 @@ pub fn run() {
                     let local = tokio::task::LocalSet::new();
                     let _result_local = local.run_until(async {
                         // 创建通道用于这里 -> core 通信
-                        let (cmd_tx, _cmd_rx) = mpsc::channel::<chat_core::ChatMeassage>(100);
+                        let (cmd_tx,mut  cmd_rx) = mpsc::channel::<ChatCommand>(100);
 
-                        apphandle.manage(AppData {
-                            cmd_tx: cmd_tx.clone(),
-                            topic: "default".to_string(),
-                        });
-
+                       
                         // ❗ Swarm 必须在 spawn_local 中（!Send）
 
                         let db_path = apphandle
@@ -64,6 +81,14 @@ pub fn run() {
                                 return;
                             }
                         };
+                        apphandle.manage(AppData {
+                            cmd_tx: cmd_tx.clone(),//you can use this to send commands to here
+                            topic: core.topic.clone(),
+                        });
+
+
+
+
                         let mut rx = core.rx_message.take().unwrap();
                         // 启动事件转发任务（多线程安全）
                         let app_handle_for_events = apphandle.clone();
@@ -76,19 +101,20 @@ pub fn run() {
                                 chat_core::swarm_event(event, &mut core);
                             }
                             Some(msg) = rx.recv()=> {
-                        app_handle_for_events.emit("chat-message", msg.data).ok();
-                    }
+                                app_handle_for_events.emit("chat-message", msg.data).ok();
+                            }
 
 
-                            /*// 处理前端命令
+                            // 处理前端命令
                             cmd = cmd_rx.recv() => {
                                 match cmd {
-                                    Some(ChatCommand::SendMessage(msg)) => {
-                                        // 发送消息...
+                                    Some(ChatCommand::SendMessage { message: msg }) => {
+                                        core.sendmessage(msg);
                                     }
                                     Some(ChatCommand::Shutdown) | None => break,
+                                   
                                 }
-                            }*/
+                            }
 
 
 
