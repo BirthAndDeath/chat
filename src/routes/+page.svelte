@@ -69,7 +69,7 @@
       placeholder="Enter message..."
       bind:value={message_send}
     />
-    <button type="submit">Greet</button>
+    <button type="submit">Send</button>
   </form>
   <p>{result}</p>
 </main>
