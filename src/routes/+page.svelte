@@ -1,4 +1,6 @@
 <script lang="ts">
+  import "../lib/i18n";
+  import { _ } from "svelte-i18n";
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
@@ -20,6 +22,7 @@
   let message_receive = $state("");
 
   async function send(event: Event) {
+    add(message_send);
     event.preventDefault();
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     result = await invoke("send", { message: message_send });
@@ -46,22 +49,19 @@
 </script>
 
 <main class="container">
+  <a href="./about" title={$_("about")}>{$_("about")}</a>
   <h1>Welcome to Chat</h1>
-  <ul>
-    {#each msg_items as item, i}
-      <li>
-        <span>{item}</span>
-        <button class="del" onclick={() => remove(i)}>×</button>
-      </li>
-    {/each}
-  </ul>
-
-  <div class="row">
-    <a href="https://github.com/BirthAndDeath/chat" target="_blank">
-      <img src="/logo.svg" class="logo chat" alt="Chat Logo" />
-    </a>
+  <div class="top-right">
+    <ul>
+      {#each msg_items as item, i}
+        <li>
+          <span>{item}</span>
+          <button class="del" onclick={() => remove(i)}>×</button>
+        </li>
+      {/each}
+    </ul>
   </div>
-  <p>Click on the Chat logos to jump to githubpage.</p>
+  <div class="top-left"></div>
 
   <form class="row" onsubmit={send}>
     <input
@@ -75,10 +75,6 @@
 </main>
 
 <style>
-  .logo.chat:hover {
-    filter: drop-shadow(0 0 2em #818183);
-  }
-
   :root {
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
     font-size: 16px;
@@ -98,34 +94,25 @@
   .container {
     margin: 0;
     padding-top: 10vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+    align-items: center;
     text-align: center;
-  }
-
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: 0.75s;
   }
 
   .row {
     display: flex;
     justify-content: center;
   }
-
-  a {
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
+  .top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    max-width: 300px;
+    overflow-y: auto;
   }
-
-  a:hover {
-    color: #535bf2;
-  }
-
   h1 {
     text-align: center;
   }
@@ -170,11 +157,6 @@
       color: #f6f6f6;
       background-color: #2f2f2f;
     }
-
-    a:hover {
-      color: #24c8db;
-    }
-
     input,
     button {
       color: #ffffff;

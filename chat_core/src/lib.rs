@@ -33,6 +33,8 @@ impl CoreConfig {
 }
 pub enum MessageEvent {
     Newmassage,
+    Error,
+    Log,
 }
 pub struct ChatMeassage {
     pub event: MessageEvent,
@@ -84,6 +86,18 @@ impl ChatCore {
         {
             println!("Publish error: {e:?}");
         }
+    }
+    fn sendlog_mpsc(&mut self, data: String) {
+        let message = ChatMeassage {
+            event: MessageEvent::Log,
+            data,
+        };
+        let tx = self.tx_message.clone();
+        tokio::spawn(async move {
+            tx.send(message)
+                .await
+                .expect("falied send message:tx_message ");
+        });
     }
     fn sendmessage_mpsc(&mut self, data: String) {
         let message = ChatMeassage {
@@ -142,7 +156,7 @@ pub fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
     match event {
         SwarmEvent::Behaviour(MyBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
             for (peer_id, _multiaddr) in list {
-                core.sendmessage_mpsc(format!("mDNS discovered a new peer: {peer_id}"));
+                core.sendlog_mpsc(format!("mDNS discovered a new peer: {peer_id}"));
 
                 core.swarm
                     .behaviour_mut()
@@ -152,7 +166,7 @@ pub fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
         }
         SwarmEvent::Behaviour(MyBehaviourEvent::Mdns(mdns::Event::Expired(list))) => {
             for (peer_id, _multiaddr) in list {
-                core.sendmessage_mpsc(format!("mDNS discover peer has expired: {peer_id}"));
+                core.sendlog_mpsc(format!("mDNS discover peer has expired: {peer_id}"));
                 core.swarm
                     .behaviour_mut()
                     .gossipsub
@@ -165,12 +179,12 @@ pub fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
             message,
         })) => {
             core.sendmessage_mpsc(format!(
-                "Got message: '{}' with id: {id} from peer: {peer_id}",
+                " peerid: {peer_id} id:{id} '{}'",
                 String::from_utf8_lossy(&message.data)
             ));
         }
         SwarmEvent::NewListenAddr { address, .. } => {
-            core.sendmessage_mpsc(format!("Local node is listening on {address}"));
+            core.sendlog_mpsc(format!("Local node is listening on {address}"));
         }
         _ => {}
     }
