@@ -9,6 +9,7 @@ use libp2p::{
 use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
+    path::PathBuf,
     time::Duration,
 };
 use tokio::sync::mpsc;
@@ -22,19 +23,29 @@ pub struct MyBehaviour {
 
 pub mod storage;
 pub struct CoreConfig {
-    ///example :"sqlite:///path/to/database.db"
-    database_path: String,
+    /// example: "/path/to/database.db"
+    database_path: PathBuf,
     // 命令
     rx_cmd: mpsc::Receiver<ChatCommand>,
+    path_to_log: Option<PathBuf>,
 }
 impl CoreConfig {
     pub fn new(
-        database_path: impl Into<std::string::String>,
+        database_path: impl Into<PathBuf>,
         rx_cmd: mpsc::Receiver<ChatCommand>,
+        path_to_log: Option<impl Into<PathBuf>>,
     ) -> Self {
+        if let None = path_to_log {
+            return Self {
+                database_path: database_path.into(),
+                rx_cmd,
+                path_to_log: None,
+            };
+        }
         Self {
             database_path: database_path.into(),
             rx_cmd,
+            path_to_log: Some(path_to_log.unwrap().into()),
         }
     }
 }
@@ -52,18 +63,37 @@ pub struct ChatMeassage {
     pub event: MessageEvent,
     pub data: String,
 }
-async fn init_logger() -> anyhow::Result<()> {
-    /*let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-    tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_target(true) // 显示模块路径
-        .with_thread_ids(true) // 显示线程 ID
-        .with_file(true) // 显示文件名
-        .with_line_number(true) // 显示行号
-        .with_ansi(true) // 彩色输出
-        .compact() // 紧凑格式
-        .try_init()
-        .map_err(|e| anyhow::anyhow!(e))?;*/
+use std::sync::Once;
+use tracing_appender::non_blocking::WorkerGuard;
+
+use std::sync::OnceLock;
+
+static LOGGER_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
+
+async fn init_logger(cfg: &CoreConfig) -> anyhow::Result<()> {
+    if let Some(path) = &cfg.path_to_log {
+        LOGGER_GUARD.get_or_init(|| {
+            std::fs::create_dir_all(path).expect("Failed to create log directory");
+
+            let file = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(path.join("app.log"))
+                .expect("Failed to open log file");
+
+            let (non_blocking, guard) = tracing_appender::non_blocking(file);
+
+            tracing_subscriber::fmt()
+                .with_writer(non_blocking)
+                .with_ansi(false)
+                .init();
+
+            tracing::info!("Logger initialized successfully");
+
+            guard // 返回 guard 存入 OnceLock
+        });
+    }
+
     Ok(())
 }
 
@@ -86,7 +116,7 @@ impl ChatCore {
         // subscribes to our topic
         swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
         let (tx, rx) = mpsc::channel(32);
-        try_join!(init_logger(), storage::init(&cfg))?;
+        try_join!(init_logger(&cfg), storage::init(&cfg))?;
 
         Ok(ChatCore {
             swarm,

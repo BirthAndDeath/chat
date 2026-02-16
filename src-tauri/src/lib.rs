@@ -1,3 +1,5 @@
+use std::f32::consts::LOG2_10;
+
 use chat_core::ChatMeassage;
 use libp2p::futures::StreamExt;
 use tauri::{AppHandle, Emitter, Manager};
@@ -52,16 +54,25 @@ pub fn run() {
                             .path()
                             .app_data_dir()
                             .expect("获取数据目录失败")
-                            .join("database.db");
+                            .join("database.sqlite");
+                        let log_path = apphandle
+                            .path()
+                            .app_log_dir()
+                            .expect("获取log目录失败")
+                            .join("log.txt");
 
                         // 确保目录存在
                         if let Some(parent) = db_path.parent() {
                             std::fs::create_dir_all(parent).ok();
                         }
+                        if let Some(parent) = log_path.parent() {
+                            std::fs::create_dir_all(parent).ok();
+                        }
 
                         let cfg = chat_core::CoreConfig::new(
-                            db_path.to_string_lossy().to_string(), //  转 String
+                            db_path,
                             cmd_rx,
+                            Some(log_path)
                         );
 
                         let mut core = match chat_core::ChatCore::try_init(cfg).await {

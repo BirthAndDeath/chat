@@ -249,7 +249,7 @@ pub async fn tui_run(app: &mut App) -> anyhow::Result<()> {
         .ok_or("消息通道问题")
         .expect("消息通道问题");
     let mut tick = interval(Duration::from_millis(16));
-    core.run();
+    let core_joinhandle = core.run();
 
     loop {
         tokio::select! {
@@ -288,6 +288,8 @@ pub async fn tui_run(app: &mut App) -> anyhow::Result<()> {
         }
         terminal.draw(|frame| tui_render(frame, &app))?;
     }
+    app.app_data.cmd_tx.try_send(ChatCommand::Shutdown);
+    core_joinhandle.join();
     disable_raw_mode()?;
     terminal.clear()?;
     terminal.show_cursor()?;

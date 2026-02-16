@@ -40,8 +40,11 @@ impl App {
         list_state.select(Some(0)); // 默认选中第一条消息
         let (mut cmd_tx, mut cmd_rx) = mpsc::channel::<ChatCommand>(64);
         let app_data = AppData { cmd_tx };
+        let home_dir = std::env::home_dir().expect("failedto get home dir");
+        let database_path = home_dir.join(".chat/database.sqlite");
+        let log_path = home_dir.join(".chat/log");
 
-        let cfg = chat_core::CoreConfig::new("~/.chat_history.db", cmd_rx);
+        let cfg = chat_core::CoreConfig::new(database_path, cmd_rx, Some(log_path));
         let mut core = chat_core::ChatCore::try_init(cfg).await?;
 
         Ok(App {
