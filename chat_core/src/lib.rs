@@ -1,9 +1,4 @@
-use std::{
-    collections::hash_map::DefaultHasher,
-    hash::{Hash, Hasher},
-    time::Duration,
-};
-
+use futures::StreamExt;
 use libp2p::{
     Swarm,
     futures::io,
@@ -11,7 +6,13 @@ use libp2p::{
     swarm::{NetworkBehaviour, SwarmEvent},
     tcp, yamux,
 };
+use std::{
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+    time::Duration,
+};
 use tokio::sync::mpsc;
+use tokio::{join, try_join};
 use tracing_subscriber::EnvFilter;
 #[derive(NetworkBehaviour)]
 pub struct MyBehaviour {
@@ -23,26 +24,37 @@ pub mod storage;
 pub struct CoreConfig {
     ///example :"sqlite:///path/to/database.db"
     database_path: String,
+    // 命令
+    rx_cmd: mpsc::Receiver<ChatCommand>,
 }
 impl CoreConfig {
-    pub fn new(database_path: impl Into<std::string::String>) -> Self {
+    pub fn new(
+        database_path: impl Into<std::string::String>,
+        rx_cmd: mpsc::Receiver<ChatCommand>,
+    ) -> Self {
         Self {
             database_path: database_path.into(),
+            rx_cmd,
         }
     }
 }
 pub enum MessageEvent {
-    Newmassage,
+    NewMessage,
     Error,
     Log,
+}
+#[derive(Debug)]
+pub enum ChatCommand {
+    SendMessage { message: String },
+    Shutdown,
 }
 pub struct ChatMeassage {
     pub event: MessageEvent,
     pub data: String,
 }
-fn init_logger() {
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-    let _ = tracing_subscriber::fmt()
+async fn init_logger() -> anyhow::Result<()> {
+    /*let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
+    tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_target(true) // 显示模块路径
         .with_thread_ids(true) // 显示线程 ID
@@ -50,7 +62,9 @@ fn init_logger() {
         .with_line_number(true) // 显示行号
         .with_ansi(true) // 彩色输出
         .compact() // 紧凑格式
-        .try_init();
+        .try_init()
+        .map_err(|e| anyhow::anyhow!(e))?;*/
+    Ok(())
 }
 
 pub struct ChatCore {
@@ -58,26 +72,62 @@ pub struct ChatCore {
     pub topic: gossipsub::IdentTopic,
     pub tx_message: tokio::sync::mpsc::Sender<ChatMeassage>,
     pub rx_message: Option<tokio::sync::mpsc::Receiver<ChatMeassage>>,
+    pub rx_cmd: mpsc::Receiver<ChatCommand>, // 命令
 }
 impl ChatCore {
-    pub fn try_init(cfg: &CoreConfig) -> anyhow::Result<Self> {
-        init_logger();
-        storage::init(cfg)?;
+    pub async fn try_init(cfg: CoreConfig) -> anyhow::Result<Self> {
         let mut swarm = swarm_init()?;
+        swarm.listen_on("/ip4/0.0.0.0/udp/0/quic-v1".parse()?)?;
+        swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
+        swarm.listen_on("/ip6/::/udp/0/quic-v1".parse()?)?;
+        swarm.listen_on("/ip6/::/tcp/0".parse()?)?;
         // Create a Gossipsub topic
         let topic = gossipsub::IdentTopic::new("test-net");
         // subscribes to our topic
         swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
         let (tx, rx) = mpsc::channel(32);
+        try_join!(init_logger(), storage::init(&cfg))?;
 
         Ok(ChatCore {
             swarm,
             tx_message: tx,
             rx_message: Some(rx),
             topic,
+            rx_cmd: cfg.rx_cmd,
         })
     }
-    pub fn sendmessage(&mut self, data: String) {
+    pub fn run(mut self) -> std::thread::JoinHandle<()> {
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap();
+
+            rt.block_on(async move {
+                loop {
+                    tokio::select! {
+                        // Swarm 网络事件
+                        event = self.swarm.select_next_some() => {
+                           swarm_event(event, &mut self).await;
+                        }
+                        Some(cmd) = self.rx_cmd.recv() => {
+                            match cmd {
+                                ChatCommand::SendMessage { message } => {
+                                    self.send_message(message);
+                                }
+                                ChatCommand::Shutdown => {
+                                    println!("Shutting down...");
+                                    break;
+                                }
+                            }
+                        }// 心跳
+                        _ = tokio::time::sleep(std::time::Duration::from_millis(100)) => {}
+                    }
+                }
+            });
+        })
+    }
+    pub fn send_message(&mut self, data: String) {
         if let Err(e) = self
             .swarm
             .behaviour_mut()
@@ -87,29 +137,27 @@ impl ChatCore {
             println!("Publish error: {e:?}");
         }
     }
-    fn sendlog_mpsc(&mut self, data: String) {
+    async fn sendlog_mpsc(&mut self, data: String) {
         let message = ChatMeassage {
             event: MessageEvent::Log,
             data,
         };
-        let tx = self.tx_message.clone();
-        tokio::spawn(async move {
-            tx.send(message)
-                .await
-                .expect("falied send message:tx_message ");
-        });
+        &self
+            .tx_message
+            .send(message)
+            .await
+            .expect("falied send message:tx_message ");
     }
-    fn sendmessage_mpsc(&mut self, data: String) {
+    async fn sendmessage_mpsc(&mut self, data: String) {
         let message = ChatMeassage {
-            event: MessageEvent::Newmassage,
+            event: MessageEvent::NewMessage,
             data,
         };
-        let tx = self.tx_message.clone();
-        tokio::spawn(async move {
-            tx.send(message)
-                .await
-                .expect("falied send message:tx_message ");
-        });
+        &self
+            .tx_message
+            .send(message)
+            .await
+            .expect("falied send message:tx_message ");
     }
 }
 fn swarm_init() -> anyhow::Result<Swarm<MyBehaviour>> {
@@ -152,12 +200,13 @@ fn swarm_init() -> anyhow::Result<Swarm<MyBehaviour>> {
 
     Ok(swarm)
 }
-pub fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
+pub async fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
     match event {
         SwarmEvent::Behaviour(MyBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
             for (peer_id, _multiaddr) in list {
-                core.sendlog_mpsc(format!("mDNS discovered a new peer: {peer_id}"));
-
+                core.sendlog_mpsc(format!("mDNS discovered a new peer: {peer_id}"))
+                    .await;
+                //eprintln!(">>> DISCOVERED: {} ", peer_id);
                 core.swarm
                     .behaviour_mut()
                     .gossipsub
@@ -166,7 +215,8 @@ pub fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
         }
         SwarmEvent::Behaviour(MyBehaviourEvent::Mdns(mdns::Event::Expired(list))) => {
             for (peer_id, _multiaddr) in list {
-                core.sendlog_mpsc(format!("mDNS discover peer has expired: {peer_id}"));
+                core.sendlog_mpsc(format!("mDNS discover peer has expired: {peer_id}"))
+                    .await;
                 core.swarm
                     .behaviour_mut()
                     .gossipsub
@@ -181,25 +231,13 @@ pub fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCore) {
             core.sendmessage_mpsc(format!(
                 " peerid: {peer_id} id:{id} '{}'",
                 String::from_utf8_lossy(&message.data)
-            ));
+            ))
+            .await;
         }
         SwarmEvent::NewListenAddr { address, .. } => {
-            core.sendlog_mpsc(format!("Local node is listening on {address}"));
+            core.sendlog_mpsc(format!("Local node is listening on {address}"))
+                .await;
         }
         _ => {}
-    }
-}
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
     }
 }

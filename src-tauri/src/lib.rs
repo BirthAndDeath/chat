@@ -1,7 +1,7 @@
 use chat_core::ChatMeassage;
 use libp2p::futures::StreamExt;
 use tauri::{AppHandle, Emitter, Manager};
-
+use chat_core::ChatCommand;
 use libp2p::{
     Swarm,
     futures::io,
@@ -21,21 +21,10 @@ async fn send(state: tauri::State<'_, AppData>, message: &str) -> Result<bool, S
         Err(e) => Err(format!("发送消息失败: {}", e)),
     }
 }
-     
-
-/*app_data_dir()		数据库、配置
-app_local_data_dir()	缓存、日志
-app_config_dir()		用户配置
-temp_dir() */
 
 use tokio::sync::mpsc;
 
-// 只存 Send + Sync 的数据
-#[derive(Debug)]
-enum ChatCommand {
-    SendMessage { message: String },
-    Shutdown,
-}
+
 pub struct AppData {
     pub cmd_tx: mpsc::Sender<ChatCommand>,
     pub topic:gossipsub::IdentTopic,
@@ -54,7 +43,7 @@ pub fn run() {
                     let local = tokio::task::LocalSet::new();
                     let _result_local = local.run_until(async {
                         // 创建通道用于这里 -> core 通信
-                        let (cmd_tx,mut  cmd_rx) = mpsc::channel::<ChatCommand>(100);
+                        let (cmd_tx,mut  cmd_rx) = mpsc::channel::<ChatCommand>(64);
 
                        
                         // ❗ Swarm 必须在 spawn_local 中（!Send）
@@ -71,10 +60,11 @@ pub fn run() {
                         }
 
                         let cfg = chat_core::CoreConfig::new(
-                            db_path.to_string_lossy().to_string(), // ✅ 转 String
+                            db_path.to_string_lossy().to_string(), //  转 String
+                            cmd_rx,
                         );
 
-                        let mut core = match chat_core::ChatCore::try_init(&cfg) {
+                        let mut core = match chat_core::ChatCore::try_init(cfg).await {
                             Ok(c) => c,
                             Err(e) => {
                                 eprintln!("Core 初始化失败: {}", e);
@@ -92,32 +82,15 @@ pub fn run() {
                         let mut rx = core.rx_message.take().unwrap();
                         // 启动事件转发任务（多线程安全）
                         let app_handle_for_events = apphandle.clone();
+                        core.run();
 
                         // 主事件循环
                         loop {
                     tokio::select! {
-                            // Swarm 网络事件
-                            event = core.swarm.select_next_some() => {
-                                chat_core::swarm_event(event, &mut core);
-                            }
+                           
                             Some(msg) = rx.recv()=> {
                                 app_handle_for_events.emit("chat-message", msg.data).ok();
                             }
-
-
-                            // 处理前端命令
-                            cmd = cmd_rx.recv() => {
-                                match cmd {
-                                    Some(ChatCommand::SendMessage { message: msg }) => {
-                                        core.sendmessage(msg);
-                                    }
-                                    Some(ChatCommand::Shutdown) | None => break,
-                                   
-                                }
-                            }
-
-
-
                             // 心跳
                             _ = tokio::time::sleep(std::time::Duration::from_millis(100)) => {}
                         }

@@ -1,14 +1,14 @@
 // 定义应用状态（Model）
 #![doc = include_str!("../../README.md")]
-use chat_core::ChatCore;
+use chat_core::{ChatCommand, ChatCore};
 use ratatui::widgets::ListState;
+use tokio::sync::mpsc;
 pub mod notui;
 pub mod tui;
 
-/*
-sendmessage /recv todo
-*/
-
+pub struct AppData {
+    pub cmd_tx: mpsc::Sender<ChatCommand>,
+}
 pub struct App {
     // --- 焦点系统 ---
     current_focus: Focus,
@@ -23,7 +23,8 @@ pub struct App {
     input: String, // 当前输入的文本
 
     should_quit: bool,
-    core: ChatCore,
+    core: Option<ChatCore>,
+    app_data: AppData,
 }
 #[derive(Debug, Clone, Copy, PartialEq)]
 // 定义焦点枚举
@@ -37,14 +38,11 @@ impl App {
     pub async fn try_init() -> anyhow::Result<App> {
         let mut list_state = ListState::default();
         list_state.select(Some(0)); // 默认选中第一条消息
+        let (mut cmd_tx, mut cmd_rx) = mpsc::channel::<ChatCommand>(64);
+        let app_data = AppData { cmd_tx };
 
-        let cfg = chat_core::CoreConfig::new("~/.chat_history.db");
-        let mut core = chat_core::ChatCore::try_init(&cfg)?;
-        core.swarm
-            .listen_on("/ip4/0.0.0.0/udp/0/quic-v1".parse()?)?;
-        core.swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
-        core.swarm.listen_on("/ip6/::/udp/0/quic-v1".parse()?)?;
-        core.swarm.listen_on("/ip6/::/tcp/0".parse()?)?;
+        let cfg = chat_core::CoreConfig::new("~/.chat_history.db", cmd_rx);
+        let mut core = chat_core::ChatCore::try_init(cfg).await?;
 
         Ok(App {
             current_focus: Focus::Input,
@@ -57,7 +55,8 @@ impl App {
             contact_list_state: list_state,
             input: String::new(),
             should_quit: false,
-            core,
+            core: Some(core),
+            app_data,
         })
     }
 }

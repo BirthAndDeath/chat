@@ -3,7 +3,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::{str::FromStr, time::Duration};
 
 use crate::CoreConfig;
-pub fn init(cfg: &CoreConfig) -> anyhow::Result<()> {
+pub async fn init(cfg: &CoreConfig) -> anyhow::Result<()> {
     let pool_options = SqlitePoolOptions::new()
         .max_connections(10) // 连接池最大连接数 (默认取决于特性)
         .min_connections(0) // 连接池最小（保持）连接数 (默认 0)

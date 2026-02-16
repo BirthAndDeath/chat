@@ -1,3 +1,4 @@
+use chat_core::ChatCommand;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use futures::StreamExt;
@@ -205,7 +206,9 @@ fn handle_input_focus(app: &mut App, key_code: KeyCode) {
             // 发送消息
             if !app.input.trim().is_empty() {
                 app.messages.push(app.input.clone());
-                app.core.sendmessage(app.input.clone());
+                app.app_data.cmd_tx.try_send(ChatCommand::SendMessage {
+                    message: app.input.clone(),
+                });
                 //send
                 app.input.clear();
                 // 自动滚动到最新消息
@@ -239,20 +242,17 @@ pub async fn tui_run(app: &mut App) -> anyhow::Result<()> {
     // 初始化终端
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
     terminal.clear()?;
-
-    let mut rx = app
-        .core
+    let mut core = app.core.take().unwrap();
+    let mut rx = core
         .rx_message
         .take()
         .ok_or("消息通道问题")
         .expect("消息通道问题");
     let mut tick = interval(Duration::from_millis(16));
+    core.run();
 
     loop {
         tokio::select! {
-
-            event = app.core.swarm.select_next_some() => chat_core::swarm_event(event,&mut  app.core),
-
             Some(msg)=rx.recv()=>{
                 let text = msg.data.as_str();
                  app.messages.push(format!("\n[网络]  {}",
