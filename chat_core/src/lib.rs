@@ -21,24 +21,28 @@ pub struct CoreConfig {
     // 命令
     rx_cmd: mpsc::Receiver<ChatCommand>,
     path_to_log: Option<PathBuf>,
+    log_level: Option<String>,
 }
 impl CoreConfig {
     pub fn new(
         database_path: impl Into<PathBuf>,
         rx_cmd: mpsc::Receiver<ChatCommand>,
         path_to_log: Option<impl Into<PathBuf>>,
+        log_level: Option<impl Into<String>>,
     ) -> Self {
         if let None = path_to_log {
             return Self {
                 database_path: database_path.into(),
                 rx_cmd,
                 path_to_log: None,
+                log_level: None,
             };
         }
         Self {
             database_path: database_path.into(),
             rx_cmd,
             path_to_log: Some(path_to_log.unwrap().into()),
+            log_level: log_level.map(|s| s.into()),
         }
     }
 }
@@ -109,7 +113,7 @@ impl ChatCore {
                                     self.send_message(message);
                                 }
                                 ChatCommand::Shutdown => {
-                                    tracing::info!("Shutting down...");
+                                    tracing::info!("p2p thread shutting down...");
                                     break;
                                 }
                             }
@@ -233,6 +237,40 @@ pub async fn swarm_event(event: SwarmEvent<MyBehaviourEvent>, core: &mut ChatCor
         }
         SwarmEvent::NewListenAddr { address, .. } => {
             core.sendlog_mpsc(format!("Local node is listening on {address}"))
+                .await;
+        }
+        SwarmEvent::ConnectionEstablished { peer_id, .. } => {}
+        SwarmEvent::ConnectionClosed { peer_id, .. } => {}
+        SwarmEvent::OutgoingConnectionError { peer_id, .. } => {
+            if peer_id.is_some() {
+                core.sendlog_mpsc(format!("OutgoingConnectionError: {peer_id:?}"))
+                    .await;
+            }
+        }
+        SwarmEvent::Dialing {
+            peer_id,
+            connection_id,
+        } => {}
+        SwarmEvent::IncomingConnectionError { local_addr, .. } => {
+            core.sendlog_mpsc(format!("IncomingConnectionError: {local_addr:?}"))
+                .await;
+        }
+        SwarmEvent::ListenerClosed {
+            listener_id,
+            addresses,
+            reason,
+        } => {}
+        SwarmEvent::ListenerError { listener_id, error } => {}
+        SwarmEvent::NewExternalAddrOfPeer { peer_id, address } => {
+            core.sendlog_mpsc(format!("NewExternalAddrOfPeer: {peer_id:?} {address:?}"))
+                .await;
+        }
+
+        SwarmEvent::ExpiredListenAddr {
+            listener_id,
+            address,
+        } => {
+            core.sendlog_mpsc(format!("ExpiredListenAddr: {listener_id:?} {address:?}"))
                 .await;
         }
         _ => {}

@@ -43,8 +43,13 @@ impl App {
         let home_dir = std::env::home_dir().expect("failedto get home dir");
         let database_path = home_dir.join(".chat/database.sqlite");
         let log_path = home_dir.join(".chat/log");
+        #[cfg(debug_assertions)]
+        let log_level = "debug";
+        #[cfg(not(debug_assertions))]
+        let log_level = "info";
 
-        let cfg = chat_core::CoreConfig::new(database_path, cmd_rx, Some(log_path));
+        let cfg =
+            chat_core::CoreConfig::new(database_path, cmd_rx, Some(log_path), Some(log_level));
         let mut core = chat_core::ChatCore::try_init(cfg).await?;
 
         Ok(App {

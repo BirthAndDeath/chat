@@ -68,11 +68,16 @@ pub fn run() {
                         if let Some(parent) = log_path.parent() {
                             std::fs::create_dir_all(parent).ok();
                         }
+                        #[cfg(debug_assertions)]
+        let log_level = "debug";
+        #[cfg(not(debug_assertions))]
+        let log_level = "info";
 
                         let cfg = chat_core::CoreConfig::new(
                             db_path,
                             cmd_rx,
-                            Some(log_path)
+                            Some(log_path),
+                            Some(log_level)
                         );
 
                         let mut core = match chat_core::ChatCore::try_init(cfg).await {
