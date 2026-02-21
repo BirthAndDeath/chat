@@ -13,13 +13,6 @@ use std::{
     time::Duration,
 };
 use tokio::sync::mpsc;
-use tokio::{join, try_join};
-use tracing_subscriber::EnvFilter;
-#[derive(NetworkBehaviour)]
-pub struct MyBehaviour {
-    gossipsub: gossipsub::Behaviour,
-    mdns: mdns::tokio::Behaviour,
-}
 
 pub mod storage;
 pub struct CoreConfig {
@@ -63,40 +56,13 @@ pub struct ChatMeassage {
     pub event: MessageEvent,
     pub data: String,
 }
-use std::sync::Once;
-use tracing_appender::non_blocking::WorkerGuard;
-
-use std::sync::OnceLock;
-
-static LOGGER_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
-
-async fn init_logger(cfg: &CoreConfig) -> anyhow::Result<()> {
-    if let Some(path) = &cfg.path_to_log {
-        LOGGER_GUARD.get_or_init(|| {
-            std::fs::create_dir_all(path).expect("Failed to create log directory");
-
-            let file = std::fs::OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(path.join("app.log"))
-                .expect("Failed to open log file");
-
-            let (non_blocking, guard) = tracing_appender::non_blocking(file);
-
-            tracing_subscriber::fmt()
-                .with_writer(non_blocking)
-                .with_ansi(false)
-                .init();
-
-            tracing::info!("Logger initialized successfully");
-
-            guard // 返回 guard 存入 OnceLock
-        });
-    }
-
-    Ok(())
+mod log;
+use log::init_logger;
+#[derive(NetworkBehaviour)]
+pub struct MyBehaviour {
+    gossipsub: gossipsub::Behaviour,
+    mdns: mdns::tokio::Behaviour,
 }
-
 pub struct ChatCore {
     pub swarm: Swarm<MyBehaviour>,
     pub topic: gossipsub::IdentTopic,
@@ -107,16 +73,13 @@ pub struct ChatCore {
 impl ChatCore {
     pub async fn try_init(cfg: CoreConfig) -> anyhow::Result<Self> {
         let mut swarm = swarm_init()?;
-        swarm.listen_on("/ip4/0.0.0.0/udp/0/quic-v1".parse()?)?;
-        swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
-        swarm.listen_on("/ip6/::/udp/0/quic-v1".parse()?)?;
-        swarm.listen_on("/ip6/::/tcp/0".parse()?)?;
+
         // Create a Gossipsub topic
         let topic = gossipsub::IdentTopic::new("test-net");
         // subscribes to our topic
         swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
         let (tx, rx) = mpsc::channel(32);
-        try_join!(init_logger(&cfg), storage::init(&cfg))?;
+        tokio::try_join!(init_logger(&cfg), storage::init(&cfg))?;
 
         Ok(ChatCore {
             swarm,
@@ -146,7 +109,7 @@ impl ChatCore {
                                     self.send_message(message);
                                 }
                                 ChatCommand::Shutdown => {
-                                    println!("Shutting down...");
+                                    tracing::info!("Shutting down...");
                                     break;
                                 }
                             }
@@ -164,7 +127,7 @@ impl ChatCore {
             .gossipsub
             .publish(self.topic.clone(), data.as_bytes())
         {
-            println!("Publish error: {e:?}");
+            tracing::error!("Publish error: {e:?}");
         }
     }
     async fn sendlog_mpsc(&mut self, data: String) {
@@ -172,7 +135,7 @@ impl ChatCore {
             event: MessageEvent::Log,
             data,
         };
-        &self
+        let _ = &self
             .tx_message
             .send(message)
             .await
@@ -183,7 +146,7 @@ impl ChatCore {
             event: MessageEvent::NewMessage,
             data,
         };
-        &self
+        let _ = &self
             .tx_message
             .send(message)
             .await
@@ -191,7 +154,7 @@ impl ChatCore {
     }
 }
 fn swarm_init() -> anyhow::Result<Swarm<MyBehaviour>> {
-    let swarm = libp2p::SwarmBuilder::with_new_identity()
+    let mut swarm = libp2p::SwarmBuilder::with_new_identity()
         .with_tokio()
         .with_tcp(
             tcp::Config::default(),
@@ -227,6 +190,10 @@ fn swarm_init() -> anyhow::Result<Swarm<MyBehaviour>> {
             Ok(MyBehaviour { gossipsub, mdns })
         })?
         .build();
+    swarm.listen_on("/ip4/0.0.0.0/udp/0/quic-v1".parse()?)?;
+    swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
+    swarm.listen_on("/ip6/::/udp/0/quic-v1".parse()?)?;
+    swarm.listen_on("/ip6/::/tcp/0".parse()?)?;
 
     Ok(swarm)
 }

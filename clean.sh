@@ -1,6 +1,5 @@
 cd ./src-tauri/ && cargo cache --autoclean
-
-npm cache clean
+npm cache verify
 cargo clean
 # 安装缓存管理器
 #cargo install cargo-cache --locked

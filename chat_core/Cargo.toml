@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.101"
-futures = "0.3.31"
+futures = "0.3.32"
 libp2p = { version = "0.56.0", features = [
     "tokio",
     "gossipsub",
@@ -24,6 +24,7 @@ sqlx = { version = "0.8.6", features = ["sqlite", "runtime-tokio", "macros"] }
 tokio = "1.49.0"
 tracing-appender = "0.2.4"
 tracing = "0.1.44"
+aes-gcm = "0.10.3"
 [package.metadata.docs.rs]
 # docs.rs 构建时使用
 no-deps = true

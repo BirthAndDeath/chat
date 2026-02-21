@@ -1,9 +1,10 @@
 <script lang="ts">
   import "../lib/i18n";
   import { _ } from "svelte-i18n";
-  import { invoke } from "@tauri-apps/api/core";
+
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
+  import Input from "./Input.svelte";
   let msg_items = $state([""]);
 
   function add(input: string) {
@@ -14,18 +15,6 @@
   }
   function remove(index: number) {
     msg_items = msg_items.filter((_, i) => i !== index);
-  }
-
-  let message_send = $state("");
-  let result = $state(false);
-
-  let message_receive = $state("");
-
-  async function send(event: Event) {
-    add(message_send);
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    result = await invoke("send", { message: message_send });
   }
 
   onMount(() => {
@@ -49,8 +38,6 @@
 </script>
 
 <main class="container">
-  <a href="./about" title={$_("about")}>{$_("about")}</a>
-  <h1>Welcome to Chat</h1>
   <div class="top-right">
     <ul>
       {#each msg_items as item, i}
@@ -62,16 +49,10 @@
     </ul>
   </div>
   <div class="top-left"></div>
-
-  <form class="row" onsubmit={send}>
-    <input
-      id="input-holder"
-      placeholder="Enter message..."
-      bind:value={message_send}
-    />
-    <button type="submit">Send</button>
-  </form>
-  <p>{result}</p>
+  <div class="bottom-right">
+    <Input />
+  </div>
+  <a href="./about" title={$_("about")}>{$_("about")}</a>
 </main>
 
 <style>
@@ -89,6 +70,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
   .container {
@@ -102,10 +85,6 @@
     text-align: center;
   }
 
-  .row {
-    display: flex;
-    justify-content: center;
-  }
   .top-right {
     position: absolute;
     top: 10px;
@@ -113,11 +92,15 @@
     max-width: 300px;
     overflow-y: auto;
   }
-  h1 {
-    text-align: center;
+  .bottom-right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 60%;
+    box-sizing: border-box;
+    padding: 10px;
   }
 
-  input,
   button {
     border-radius: 8px;
     border: 1px solid transparent;
@@ -143,13 +126,8 @@
     background-color: #e8e8e8;
   }
 
-  input,
   button {
     outline: none;
-  }
-
-  #input-holder {
-    margin-right: 5px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -157,7 +135,7 @@
       color: #f6f6f6;
       background-color: #2f2f2f;
     }
-    input,
+
     button {
       color: #ffffff;
       background-color: #0f0f0f98;

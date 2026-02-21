@@ -1,7 +1,14 @@
 # Chat
 
-Chat是一个基于 Tauri 框架构建的跨平台桌面应用程序，目前处于非常早期的开发阶段。本项目旨在提供一个高性能、低资源占用的聊天应用。
+Chat是一个基于 Tauri 框架构建的跨平台应用程序，目前处于非常早期的开发阶段。本项目旨在提供一个高性能、低资源占用的通用通信工具。
+
 仅演示，生产自负
+
+## 目标
+
+- 数据最小化保证隐私
+- 本地优先，安全优先
+- 开源可审计
 
 ## Attention
 
@@ -11,7 +18,7 @@ Chat是一个基于 Tauri 框架构建的跨平台桌面应用程序，目前处
 ## License
 
 This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
-出于对通信软件安全性的考虑，暂定为传染性开源，未来计划可能有更宽松的协议用于接口
+出于对通信软件安全性的考虑，暂定为AGPLv3.0
 
 ## 项目状态
 
@@ -22,6 +29,11 @@ version:0.0.1
 
 ## 项目结构
 
+- /cli 存放cli项目（rust命令行，基于ratatui）
+- {
+    /src
+    /src-tauri} 存放tauri项目
+
 ### chat app
 
 - **框架**: Tauri 2
@@ -31,7 +43,7 @@ version:0.0.1
 
 - **界面**: ratatui
 
-## 安装与运行
+## 开发测试
 
 ### 环境要求
 
@@ -89,6 +101,4 @@ npm tauri build
 
 ### 吐槽
 
-在上学，无时间😭
-希望有大佬帮忙一起开发，我太菜了
 ^q^

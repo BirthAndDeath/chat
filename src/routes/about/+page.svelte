@@ -4,6 +4,7 @@
 
 <main>
     <div class="row">
+        <h1>Welcome to Chat</h1>
         <a href="/" title={$_("home")}>{$_("home")}</a>
         <a href="https://github.com/BirthAndDeath/chat" target="_blank">
             <img src="/logo.svg" class="logo chat" alt="Chat Logo" />
@@ -41,6 +42,9 @@
 
     a:hover {
         color: #535bf2;
+    }
+    h1 {
+        text-align: center;
     }
     @media (prefers-color-scheme: dark) {
         :root {
